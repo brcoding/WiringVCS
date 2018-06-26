@@ -1,10 +1,8 @@
 from os import listdir
 from os.path import isfile, join
-import sqlite3
 import hashlib
 import time
 import RPi.GPIO as gpio
-import serial
 import subprocess
 
 # Set this to the CS select pin.
@@ -21,8 +19,10 @@ def run_cart():
     # Dump the connected cart to rom.bin
     subprocess.call(["./dumper"])
     # Reset the pin so we can detect when it is pulled out.
+    gpio.setmode(gpio.BCM)
     gpio.setup(testpin, gpio.OUT, initial=gpio.LOW)
     gpio.setup(testpin, gpio.IN, pull_up_down=gpio.PUD_DOWN)
+    gpio.remove_event_detect(testpin)
     gpio.add_event_detect(testpin, gpio.BOTH)
     def pin_callback(data):
       print("Cart Removed")
@@ -44,6 +44,7 @@ def run_cart():
           #call(["stella", rom_path + "/" + file])
           stella = subprocess.Popen(["stella", rom_path + "/" + file], shell=False)
           stella.wait()
+          gpio.cleanup()
           break
   except Exception as e:
     print("Exception while trying to read cart: {}".format(e))
@@ -61,6 +62,7 @@ try:
         break
     # Give a second to make sure the cart is all the way plugged in before trying to read.
     time.sleep(1)
+    gpio.cleanup()
 
     run_cart()
 except KeyboardInterrupt:
