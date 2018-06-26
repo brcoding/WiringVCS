@@ -3,7 +3,7 @@
 
 #include "Cart.h"
 
-#define READ_DELAY 25
+#define READ_DELAY 65
 #define noop 
 
 // number of bytes for bank compares

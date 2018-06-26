@@ -192,19 +192,35 @@ uint8_t CartDumper::readByte(Cart* cart, uint16_t addr) {
 	// don't return data for hotspots to prevent unwanted bankswitches
 	if (cart != NULL && inArray(addr, cart->hotspotList, cart->hotspotCount)) {
 		return 0;
-	} 
-	setAddress(addr);
+	}
+    uint8_t readBytes[3];
+    uint8_t val;
 
-	uint8_t d0 = digitalRead(D0);
-	uint8_t d1 = digitalRead(D1);
-	uint8_t d2 = digitalRead(D2);
-	uint8_t d3 = digitalRead(D3);
-	uint8_t d4 = digitalRead(D4);
-	uint8_t d5 = digitalRead(D5);
-	uint8_t d6 = digitalRead(D6);
-	uint8_t d7 = digitalRead(D7);
+	for (int i = 0; i < 3; i++) {
+		setAddress(addr);
 
-	uint8_t val = (d7 << 7) + (d6 << 6) + (d5 << 5) + (d4 << 4) + (d3 << 3) + (d2 << 2) + (d1 << 1) + d0;
+		uint8_t d0 = digitalRead(D0);
+		uint8_t d1 = digitalRead(D1);
+		uint8_t d2 = digitalRead(D2);
+		uint8_t d3 = digitalRead(D3);
+		uint8_t d4 = digitalRead(D4);
+		uint8_t d5 = digitalRead(D5);
+		uint8_t d6 = digitalRead(D6);
+		uint8_t d7 = digitalRead(D7);
+
+		val = (d7 << 7) + (d6 << 6) + (d5 << 5) + (d4 << 4) + (d3 << 3) + (d2 << 2) + (d1 << 1) + d0;
+		readBytes[i] = val;
+		bool matched = false;
+		for (int x = 0; x < i; x++) {
+			if (readBytes[x] == val) {
+				matched = true;
+				break;
+			}
+		}
+		if (matched) {
+			break;
+		}
+	}
 
 	return val;
 }
